@@ -1004,7 +1004,25 @@ pub fn parse(args: ParseArgs) !void {
     // Start traversing the AST of the parsed header. Pass in the builder as the client_data
     const cursor = c.clang_getTranslationUnitCursor(unit);
     _ = c.clang_visitChildren(cursor, visitorOuter, &self);
-
+    if (self.registry.order.items.len == 0) {
+        std.debug.print("Warning: No declarations parsed for framework {s}. Inserting dummy declaration.\n", .{args.framework.name});
+        const dummy = try self.allocType();
+        dummy.* = .{
+            .decleration = .{
+                .name = "dummy",
+                .parent = null,
+                .children = std.ArrayList(*Type.Decleration).init(self.gpa),
+                .cursor = c.clang_getNullCursor(),
+                .origin = .runtime,
+                .tag = .{
+                    .identifier = .{
+                        .type_parameters = std.ArrayList(*Type).init(self.gpa),
+                    },
+                },
+            },
+        };
+        try self.registry.insert(&dummy.decleration);
+    }
     // Store the registry as an out param of args to be used later by a rendering job.
     args.result.* = self.registry;
     return;
