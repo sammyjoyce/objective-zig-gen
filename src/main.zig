@@ -140,19 +140,18 @@ pub fn main() !void {
                     var parse_framework_work = std.Thread.WaitGroup{};
                     defer pool.waitAndWork(&parse_framework_work);
                     for (frameworks.value, 0..) |*framework, index| {
+                        const parse_args = Parser.ParseArgs{
+                            .gpa = gpa,
+                            .arena = gpa,
+                            .sdk_path = sdk_path,
+                            .framework = framework,
+                            .result = &results[index],
+                            .progress = parse_progress,
+                        };
                         pool.spawnWg(
                             &parse_framework_work,
                             Parser.parse,
-                            .{
-                                .{
-                                    .gpa = gpa,
-                                    .arena = gpa,
-                                    .sdk_path = sdk_path,
-                                    .framework = framework,
-                                    .result = &results[index],
-                                    .progress = parse_progress,
-                                },
-                            },
+                            .{parse_args},
                         );
                     }
                 }
@@ -280,15 +279,18 @@ pub fn main() !void {
                     var render_framework_work = std.Thread.WaitGroup{};
                     defer pool.waitAndWork(&render_framework_work);
                     for (results) |*r| {
-                        pool.spawnWg(&render_framework_work, Renderer.run, .{
-                            .{
-                                .allocator = gpa,
-                                .output = output,
-                                .manifest = manifest,
-                                .registry = r,
-                                .progress = render_progress,
-                            },
-                        });
+                        const render_args = Renderer.RunArgs{
+                            .allocator = gpa,
+                            .output = output,
+                            .manifest = manifest,
+                            .registry = r,
+                            .progress = render_progress,
+                        };
+                        pool.spawnWg(
+                            &render_framework_work,
+                            Renderer.run,
+                            .{render_args},
+                        );
                     }
                 }
             }

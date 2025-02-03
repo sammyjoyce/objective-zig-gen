@@ -953,13 +953,15 @@ fn renderTypeAsIdentifier(self: *@This(), @"type": *Type) void {
     }
 }
 
-pub fn run(args: struct {
+pub const RunArgs = struct {
     allocator: Allocator,
     output: fs.Dir,
     manifest: Manifest,
     registry: *Registry,
     progress: std.Progress.Node,
-}) void {
+};
+
+pub fn run(args: RunArgs) void {
     const progress = args.progress.start(args.registry.owner.name, args.registry.order.items.len);
     defer progress.end();
 

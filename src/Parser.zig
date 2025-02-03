@@ -875,16 +875,16 @@ fn analyzeType(self: *@This(), origin: Type.Decleration.Origin, @"type": c.CXTyp
     return result;
 }
 
-pub fn parse(
-    args: struct {
-        gpa: Allocator,
-        arena: Allocator,
-        sdk_path: []const u8,
-        framework: *const Framework,
-        result: *Registry,
-        progress: std.Progress.Node,
-    },
-) void {
+pub const ParseArgs = struct {
+    gpa: Allocator,
+    arena: Allocator,
+    sdk_path: []const u8,
+    framework: *const Framework,
+    result: *Registry,
+    progress: std.Progress.Node,
+};
+
+pub fn parse(args: ParseArgs) void {
     const progress = args.progress.start(args.framework.name, 0);
     defer progress.end();
 
