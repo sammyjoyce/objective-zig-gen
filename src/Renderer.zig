@@ -967,9 +967,11 @@ pub fn run(args: RunArgs) !void {
     const progress = args.progress.start(args.registry.owner.name, args.registry.order.items.len);
     defer progress.end();
 
-    const path = fmt.allocPrint(args.allocator, "{s}.zig", .{args.registry.owner.output_file}) catch {
+    const out_name = if (args.registry.owner.output_file.len != 0) args.registry.owner.output_file else args.registry.owner.name;
+    const path = fmt.allocPrint(args.allocator, "{s}.zig", .{out_name}) catch {
         @panic("OOM");
     };
+    std.debug.print("Generating output file: {s}\n", .{ path });
     defer args.allocator.free(path);
 
     var output_file = args.output.createFile(path, .{}) catch {
