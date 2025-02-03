@@ -48,6 +48,7 @@ fn mainImpl() !void {
             const frameworks = possible_frameworks.?;
             defer frameworks.deinit();
             std.debug.print("Found {d} frameworks in manifest: {s}\n", .{frameworks.value.len, result.path});
+            std.debug.print("HELLO FROM MAIN AFTER PARSE!\n", .{});
 
             if (frameworks.value.len == 0) {
                 std.log.err("Found no frameworks in manifest '{s}'.", .{result.path});
