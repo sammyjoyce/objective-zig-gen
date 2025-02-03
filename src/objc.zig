@@ -3,6 +3,9 @@ const std = @import("std");
 const mem = std.mem;
 const Allocator = mem.Allocator;
 
+// Add standard C types
+pub const uint32_t = u32;
+
 pub const AutoreleasePool = opaque {};
 extern "objc" fn objc_autoreleasePoolPop(pool: *AutoreleasePool) void;
 extern "objc" fn objc_autoreleasePoolPush() *AutoreleasePool;
@@ -119,13 +122,18 @@ pub fn msgSend(receiver: anytype, comptime selector: [*:0]const u8, return_type:
                 .type = Selector,
             },
         };
-        for (@typeInfo(@TypeOf(args)).Struct.fields) |field| {
-            params = params ++
-                .{.{
-                .is_generic = false,
-                .is_noalias = false,
-                .type = field.type,
-            }};
+        const args_info = @typeInfo(@TypeOf(args));
+        if (@hasField(std.builtin.Type, "Struct")) {
+            if (args_info == .Struct) {
+                for (args_info.Struct.fields) |field| {
+                    params = params ++
+                        .{.{
+                        .is_generic = false,
+                        .is_noalias = false,
+                        .type = field.type,
+                    }};
+                }
+            }
         }
         break :init std.builtin.Type{
             .Fn = .{

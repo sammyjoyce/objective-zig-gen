@@ -313,7 +313,7 @@ pub const Type = union(enum) {
                         }
                         std.debug.print(">(", .{});
                     }
-                    std.debug.print("(super: {s}", .{i.super.?.name});
+                    std.debug.print("(super: {s}", .{if (i.super) |s| s.name else "[none]"});
                     if (i.protocols.items.len > 0) {
                         std.debug.print(", protocols: ", .{});
                         for (i.protocols.items) |p| {
@@ -404,7 +404,7 @@ pub const Registry = struct {
     };
 
     pub fn init(owner: *const Framework, allocator: Allocator) @This() {
-        return .{
+        return @as(@This(), .{
             .owner = owner,
 
             .order = std.ArrayList(Order).init(allocator),
@@ -415,7 +415,7 @@ pub const Registry = struct {
             .enums = std.StringHashMap(*Type.Decleration).init(allocator),
             .protocols = std.StringHashMap(*Type.Decleration).init(allocator),
             .interfaces = std.StringHashMap(*Type.Decleration).init(allocator),
-        };
+        });
     }
 
     pub fn getMap(self: *Self, tag: meta.Tag(Type.Decleration.Tag)) *std.StringHashMap(*Type.Decleration) {
@@ -884,7 +884,7 @@ pub const ParseArgs = struct {
     progress: std.Progress.Node,
 };
 
-pub fn parse(args: ParseArgs) void {
+pub fn parse(args: ParseArgs) !void {
     const progress = args.progress.start(args.framework.name, 0);
     defer progress.end();
 
@@ -905,6 +905,7 @@ pub fn parse(args: ParseArgs) void {
     } catch {
         @panic("OOM");
     };
+    std.debug.print("Parsing header: {s}\n", .{path});
     defer args.gpa.free(path);
 
     // Parse the main header of the framework using libclang
@@ -932,10 +933,28 @@ pub fn parse(args: ParseArgs) void {
     );
     defer c.clang_disposeTranslationUnit(unit);
 
-    // If we've found an error then we cant recover.
+    // If we've found an error then propagate it up
     if (err != c.CXError_Success) {
-        std.log.err("Failed to parse {s} due to error code {}", .{ path, err });
-        @panic("Failed to parse Objective-C header");
+        std.log.err("Failed to parse header for framework {s}", .{args.framework.name});
+        std.log.err("  Path: {s}", .{path});
+        std.log.err("  SDK Path: {s}", .{args.sdk_path});
+        std.log.err("  Clang error code: {}", .{err});
+        
+        // Print any diagnostics from clang
+        const num_diagnostics = c.clang_getNumDiagnostics(unit);
+        if (num_diagnostics > 0) {
+            std.log.err("  Clang diagnostics:", .{});
+            var i: u32 = 0;
+            while (i < num_diagnostics) : (i += 1) {
+                const diag = c.clang_getDiagnostic(unit, i);
+                const text = c.clang_formatDiagnostic(diag, c.clang_defaultDiagnosticDisplayOptions());
+                std.log.err("    {s}", .{c.clang_getCString(text)});
+                c.clang_disposeString(text);
+                c.clang_disposeDiagnostic(diag);
+            }
+        }
+        
+        return error.FailedToParseHeader;
     }
 
     // Create the builder which is used to store type info to be rendered later.
@@ -988,9 +1007,13 @@ pub fn parse(args: ParseArgs) void {
 
     // Store the registry as an out param of args to be used later by a rendering job.
     args.result.* = self.registry;
+    return;
 }
 
-const Error = error{UnhandledBranch} || Allocator.Error;
+const Error = error{
+    UnhandledBranch,
+    FailedToParseHeader,
+} || Allocator.Error;
 
 fn visitorInner(self: *Parser, cursor: c.CXCursor, parent_cursor: c.CXCursor) Error!c.CXChildVisitResult {
     // Since we're using the visitor pattern we need to keep track of parents and their
@@ -1715,7 +1738,15 @@ fn visitorOuter(
     parent_cursor: c.CXCursor,
     client_data: c.CXClientData,
 ) callconv(.C) c.CXChildVisitResult {
-    // Conver the client_data back into the builder
+    // Debug: print cursor kind and spelling
+    const kind_spelling = c.clang_getCursorKindSpelling(c.clang_getCursorKind(cursor));
+    std.debug.print("Visiting cursor: {s} - {s}\n", .{
+        c.clang_getCString(kind_spelling),
+        c.clang_getCString(c.clang_getCursorSpelling(cursor))
+    });
+    c.clang_disposeString(kind_spelling);
+
+    // Convert the client_data back into the builder
     const self: *Parser = @alignCast(@ptrCast(client_data));
     return self.visitorInner(cursor, parent_cursor) catch |err| {
         const location = c.clang_getCursorLocation(cursor);

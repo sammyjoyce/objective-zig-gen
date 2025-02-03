@@ -961,7 +961,7 @@ pub const RunArgs = struct {
     progress: std.Progress.Node,
 };
 
-pub fn run(args: RunArgs) void {
+pub fn run(args: RunArgs) !void {
     const progress = args.progress.start(args.registry.owner.name, args.registry.order.items.len);
     defer progress.end();
 

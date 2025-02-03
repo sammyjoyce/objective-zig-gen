@@ -36,7 +36,7 @@ pub const ArgParser = union(enum) {
         var option_map = std.StringHashMap(Option.ParamValue).init(gpa);
 
         var index: i32 = 1;
-        outer: while (args.next()) |arg| {
+        args_loop: while (args.next()) |arg| {
             defer index += 1;
 
             // The help option or the spec json file must be the first argument
@@ -125,7 +125,7 @@ pub const ArgParser = union(enum) {
                 // If we have no param then insert the arg into the option_map
                 if (option.param == .none) {
                     try option_map.put(option.name, .{ .none = {} });
-                    continue :outer;
+                    continue :args_loop;
                 }
 
                 // If we allow a param peek ahead to see if there is a possible param being passed to this argument.
