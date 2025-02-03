@@ -270,6 +270,7 @@ fn mainImpl() !void {
 
                 if (single_threaded) {
                     for (results) |*r| {
+                        std.debug.print("Rendering framework '{s}' with {d} declarations.\n", .{ r.owner.name, r.order.items.len });
                         try Renderer.run(.{
                             .allocator = gpa,
                             .output = output,
@@ -281,6 +282,7 @@ fn mainImpl() !void {
                 } else {
                     var renderWg: std.Thread.WaitGroup = .{};
                     for (results) |*r| {
+                        std.debug.print("Spawning render for framework '{s}' with {d} declarations.\n", .{ r.owner.name, r.order.items.len });
                         const render_args = Renderer.RunArgs{
                             .allocator = gpa,
                             .output = output,
