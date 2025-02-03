@@ -172,10 +172,10 @@ fn mainImpl() !void {
             }
 
             std.debug.print("Result options: no_render = {}\n", .{ result.options.contains("no_render") });
-            // Stop here if no rendering is required.
-            if (result.options.contains("no_render")) {
-                return;
-            }
+            // For debugging purposes, force rendering regardless of the no_render flag.
+            //if (result.options.contains("no_render")) {
+            //    return;
+            //}
 
             // Merge results from parsing.
             for (results) |*a| {
