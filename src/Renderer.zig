@@ -52,8 +52,8 @@ pub fn render(self: *@This(), comptime format: []const u8, args: anytype) void {
 
 pub fn renderFrameworkDecl(self: *@This(), named: *Type.Decleration) bool {
     switch (named.origin) {
-        .framework => |f| if (mem.eql(u8, f, self.registry.owner.name)) {
-            std.debug.print("Rendering named declaration for framework: {s}\n", .{ named.name });
+        .framework => |f| {
+            std.debug.print("Rendering named declaration for framework: {s}. Registry owner: {s}, Origin: {s}\n", .{ named.name, self.registry.owner.name, f });
             return self.renderNamedDecl(named);
         },
         else => {},
