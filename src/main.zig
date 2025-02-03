@@ -279,6 +279,7 @@ fn mainImpl() !void {
                             .registry = r,
                             .progress = render_progress,
                         });
+                        std.debug.print("Finished rendering framework '{s}'.\n", .{ r.owner.name });
                     }
                 } else {
                     var renderWg: std.Thread.WaitGroup = .{};
@@ -302,7 +303,9 @@ fn mainImpl() !void {
                                     }) catch {
                                         std.log.err("Failed to record error from framework {s}", .{ra.registry.owner.name});
                                     };
+                                    return;
                                 };
+                                std.debug.print("Finished rendering framework '{s}'.\n", .{ ra.registry.owner.name });
                             }
                         }.wrapper, .{render_args, &thread_errors_mutex, &thread_errors});
                     }
@@ -321,7 +324,9 @@ fn mainImpl() !void {
                     }
                 }
             }
-
+            
+            std.debug.print("Rendering complete.\n", .{});
+            
             // Generate the root file that includes the runtime and all frameworks.
             {
                 var root_file = try output.createFile("root.zig", .{});
