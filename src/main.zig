@@ -171,6 +171,7 @@ fn mainImpl() !void {
                     .{ i, reg.owner.name, reg.order.items.len });
             }
 
+            std.debug.print("Result options: no_render = {b}\n", .{ result.options.contains("no_render") });
             // Stop here if no rendering is required.
             if (result.options.contains("no_render")) {
                 return;
