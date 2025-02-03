@@ -1024,6 +1024,7 @@ pub fn parse(args: ParseArgs) !void {
         try self.registry.insert(&dummy.decleration);
     }
     std.debug.print("Parser: Parsed {d} top-level declarations for framework {s}.\n", .{ self.registry.order.items.len, args.framework.name });
+    std.debug.flushStdout();
     // Store the registry as an out param of args to be used later by a rendering job.
     args.result.* = self.registry;
     return;
