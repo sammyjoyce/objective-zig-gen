@@ -327,6 +327,7 @@ fn mainImpl() !void {
             }
             
             std.debug.print("Rendering complete.\n", .{});
+            std.debug.print("No .zig files appear to be generated. Consider verifying that Parser parsed declaration(s) for each framework, or confirm all frameworks have top-level declarations.\n", .{});
             
             // Generate the root file that includes the runtime and all frameworks.
             {
