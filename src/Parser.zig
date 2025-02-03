@@ -954,7 +954,7 @@ pub fn parse(args: ParseArgs) !void {
             }
         }
         
-        return;
+        std.debug.print("Continuing parse despite clang error code {}.\n", .{err});
     }
 
     // Create the builder which is used to store type info to be rendered later.
