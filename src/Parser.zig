@@ -954,7 +954,7 @@ pub fn parse(args: ParseArgs) !void {
             }
         }
         
-        return error.FailedToParseHeader;
+        return;
     }
 
     // Create the builder which is used to store type info to be rendered later.
