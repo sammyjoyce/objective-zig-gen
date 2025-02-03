@@ -53,6 +53,7 @@ pub fn render(self: *@This(), comptime format: []const u8, args: anytype) void {
 pub fn renderFrameworkDecl(self: *@This(), named: *Type.Decleration) bool {
     switch (named.origin) {
         .framework => |f| if (mem.eql(u8, f, self.registry.owner.name)) {
+            std.debug.print("Rendering named declaration for framework: {s}\n", .{ named.name });
             return self.renderNamedDecl(named);
         },
         else => {},
@@ -962,6 +963,7 @@ pub const RunArgs = struct {
 };
 
 pub fn run(args: RunArgs) !void {
+    std.debug.print("Renderer.run entered: Registry owner: {s}, order items: {d}\n", .{ args.registry.owner.name, args.registry.order.items.len });
     const progress = args.progress.start(args.registry.owner.name, args.registry.order.items.len);
     defer progress.end();
 
