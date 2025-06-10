@@ -128,10 +128,10 @@ pub fn msgSend(receiver: anytype, comptime selector: [*:0]const u8, return_type:
                 for (args_info.Struct.fields) |field| {
                     params = params ++
                         .{.{
-                        .is_generic = false,
-                        .is_noalias = false,
-                        .type = field.type,
-                    }};
+                            .is_generic = false,
+                            .is_noalias = false,
+                            .type = field.type,
+                        }};
                 }
             }
         }

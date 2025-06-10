@@ -1,6 +1,6 @@
 const std = @import("std");
 const mem = std.mem;
-const Allocator = mem.Allocator;
+
 const Progress = std.Progress;
 const fs = std.fs;
 
@@ -13,7 +13,6 @@ const Renderer = @import("Renderer.zig");
 
 const Parser = @import("Parser.zig");
 const Registry = Parser.Registry;
-const Type = Parser.Type;
 
 const ArgParser = @import("arg_parser.zig").ArgParser;
 
@@ -47,7 +46,7 @@ fn mainImpl() !void {
             }
             const frameworks = possible_frameworks.?;
             defer frameworks.deinit();
-            std.debug.print("Found {d} frameworks in manifest: {s}\n", .{frameworks.value.len, result.path});
+            std.debug.print("Found {d} frameworks in manifest: {s}\n", .{ frameworks.value.len, result.path });
             std.debug.print("HELLO FROM MAIN AFTER PARSE!\n", .{});
 
             if (frameworks.value.len == 0) {
@@ -146,7 +145,7 @@ fn mainImpl() !void {
                                     };
                                 };
                             }
-                        }.wrapper, .{parse_args, &thread_errors_mutex, &thread_errors});
+                        }.wrapper, .{ parse_args, &thread_errors_mutex, &thread_errors });
                     }
                     parseWg.wait();
 
@@ -168,11 +167,10 @@ fn mainImpl() !void {
             var i: usize = 0;
             while (i < frameworks.value.len) : (i += 1) {
                 const reg = results[i];
-                std.debug.print("Registry[{d}] for framework '{s}' has {d} top-level declarations.\n",
-                    .{ i, reg.owner.name, reg.order.items.len });
+                std.debug.print("Registry[{d}] for framework '{s}' has {d} top-level declarations.\n", .{ i, reg.owner.name, reg.order.items.len });
             }
 
-            std.debug.print("Result options: no_render = {}\n", .{ result.options.contains("no_render") });
+            std.debug.print("Result options: no_render = {}\n", .{result.options.contains("no_render")});
             // For debugging purposes, force rendering regardless of the no_render flag.
             //if (result.options.contains("no_render")) {
             //    return;
@@ -235,7 +233,7 @@ fn mainImpl() !void {
 
             // If no declarations were parsed, log a warning
             if (results[0].order.items.len == 0) {
-                std.debug.print("Warning: No declarations were parsed for framework '{s}'.\n", .{ results[0].owner.name });
+                std.debug.print("Warning: No declarations were parsed for framework '{s}'.\n", .{results[0].owner.name});
             }
 
             // Determine output directory from command-line options.
@@ -280,7 +278,7 @@ fn mainImpl() !void {
                             .registry = r,
                             .progress = render_progress,
                         });
-                        std.debug.print("Finished rendering framework '{s}'.\n", .{ r.owner.name });
+                        std.debug.print("Finished rendering framework '{s}'.\n", .{r.owner.name});
                     }
                 } else {
                     var renderWg: std.Thread.WaitGroup = .{};
@@ -306,9 +304,9 @@ fn mainImpl() !void {
                                     };
                                     return;
                                 };
-                                std.debug.print("Finished rendering framework '{s}'.\n", .{ ra.registry.owner.name });
+                                std.debug.print("Finished rendering framework '{s}'.\n", .{ra.registry.owner.name});
                             }
-                        }.wrapper, .{render_args, &thread_errors_mutex, &thread_errors});
+                        }.wrapper, .{ render_args, &thread_errors_mutex, &thread_errors });
                     }
                     renderWg.wait();
 
@@ -325,10 +323,10 @@ fn mainImpl() !void {
                     }
                 }
             }
-            
+
             std.debug.print("Rendering complete.\n", .{});
             std.debug.print("No .zig files appear to be generated. Consider verifying that Parser parsed declaration(s) for each framework, or confirm all frameworks have top-level declarations.\n", .{});
-            
+
             // Generate the root file that includes the runtime and all frameworks.
             {
                 var root_file = try output.createFile("root.zig", .{});

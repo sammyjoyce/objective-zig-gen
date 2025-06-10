@@ -971,7 +971,7 @@ pub fn run(args: RunArgs) !void {
     const path = fmt.allocPrint(args.allocator, "{s}.zig", .{out_name}) catch {
         @panic("OOM");
     };
-    std.debug.print("Generating output file: {s}\n", .{ path });
+    std.debug.print("Generating output file: {s}\n", .{path});
     defer args.allocator.free(path);
 
     var output_file = args.output.createFile(path, .{}) catch {

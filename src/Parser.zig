@@ -939,7 +939,7 @@ pub fn parse(args: ParseArgs) !void {
         std.log.err("  Path: {s}", .{path});
         std.log.err("  SDK Path: {s}", .{args.sdk_path});
         std.log.err("  Clang error code: {}", .{err});
-        
+
         // Print any diagnostics from clang
         const num_diagnostics = c.clang_getNumDiagnostics(unit);
         if (num_diagnostics > 0) {
@@ -953,7 +953,7 @@ pub fn parse(args: ParseArgs) !void {
                 c.clang_disposeDiagnostic(diag);
             }
         }
-        
+
         std.debug.print("Continuing parse despite clang error code {}.\n", .{err});
     }
 
@@ -1760,10 +1760,7 @@ fn visitorOuter(
 ) callconv(.C) c.CXChildVisitResult {
     // Debug: print cursor kind and spelling
     const kind_spelling = c.clang_getCursorKindSpelling(c.clang_getCursorKind(cursor));
-    std.debug.print("Visiting cursor: {s} - {s}\n", .{
-        c.clang_getCString(kind_spelling),
-        c.clang_getCString(c.clang_getCursorSpelling(cursor))
-    });
+    std.debug.print("Visiting cursor: {s} - {s}\n", .{ c.clang_getCString(kind_spelling), c.clang_getCString(c.clang_getCursorSpelling(cursor)) });
     c.clang_disposeString(kind_spelling);
 
     // Convert the client_data back into the builder
